@@ -68,4 +68,31 @@ void bmp24_freeDataPixels (t_pixel** pixels, int height);
 t_bmp24 * bmp24_allocate (int width, int height, int colorDepth);
 void bmp24_free (t_bmp24 * img);
 
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+t_bmp24 * bmp24_loadImage(const char *filename);
+void bmp24_saveImage(t_bmp *img, const char *filename);
+
+// /////////////////////////////////////////////////////////////////////////////////// //
+
+void file_rawRead(uint32_t position, void *buffer, uint32_t size, size_t n, FILE *file);
+void file_rawWrite(uint32_t position, void *buffer, uint32_t size, size_t n, FILE *file);
+
+// /////////////////////////////////////////////////////////////////////////////////// //
+
+void bmp24_readPixelValue(t_bmp *image, int x, int y, FILE *file);
+void bmp24_readPixelData(t_bmp *image, FILE *file);
+void bmp24_writePixelValue(t_bmp *image, int x, int y, FILE *file);
+void bmp24_writePixelData(t_bmp *image, FILE *file);
+
+// ////////////////////////////////////////////////////////////////////////////////////// //
+void bmp24_negative(t_bmp *img);
+void bmp24_grayscale(t_bmp *img);
+void bmp24_brightness(t_bmp *img, int value);
+
+// /////////////////////////////////////////////////////////////////////////////////////////// //
+
+t_pixel bmp24_convolution(t_bmp24 *img, int x, int y, float **kernel, int kernelSize);
+
+
 #endif //BMP_24_H

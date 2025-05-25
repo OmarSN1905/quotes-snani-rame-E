@@ -1,6 +1,6 @@
 #include "histogramme.h"
-#include "../bmp_8/bmp8.h"
-#include "../bmp_24/bmp24.h"
+#include "../bmp_8/bmp_8.h"
+#include "../bmp_24/bmp_24.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -67,11 +67,6 @@ void bmp8_equalize(t_bmp8 *img, unsigned int *hist_eq) {
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// //
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// //
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "../bmp_24/bmp24.h"      // t_bmp24 et t_pixel
 
 void bmp24_equalize(t_bmp24 *img) {
     if (!img || !img->data) {

@@ -1,5 +1,4 @@
 #include "bmp_24.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,15 +83,26 @@ void  file_rawWrite ( uint32_t position , void * buffer, uint32_t size, size_t n
 
 int bmp24_readPixelData(FILE *file, t_bmp24 *img) {
     int i, j;
-    for (i = 0; i < img->height; i++) {
+    int rowSize = ((img->width * 3 + 3) / 4) * 4; // taille ligne avec padding
+    uint8_t *row = malloc(rowSize);
+    if (!row) return 0;
+
+    // Les lignes sont stockées du bas vers le haut
+    for (i = img->height - 1; i >= 0; i--) {
+        if (fread(row, 1, rowSize, file) != rowSize) {
+            free(row);
+            return 0;
+        }
         for (j = 0; j < img->width; j++) {
-            if (fread(&img->data[i][j], sizeof(t_pixel), 1, file) != 1) {
-                return 0;
-            }
+            img->data[i][j].blue  = row[j*3 + 0]; // B
+            img->data[i][j].green = row[j*3 + 1]; // G
+            img->data[i][j].red   = row[j*3 + 2]; // R
         }
     }
+    free(row);
     return 1;
 }
+
 void bmp24_writePixelValue(t_bmp24 *img, int x, int y, FILE *file) {
     uint8_t rgb[3] = {
         img->data[y][x].red,
@@ -101,6 +111,7 @@ void bmp24_writePixelValue(t_bmp24 *img, int x, int y, FILE *file) {
     };
     fwrite(rgb, 1, 3, file);
 }
+
 void bmp24_readPixelValue(t_bmp24 *img, int x, int y, FILE *file) {
     uint8_t rgb[3];
     if (fread(rgb, 1, 3, file) == 3) {
@@ -112,12 +123,19 @@ void bmp24_readPixelValue(t_bmp24 *img, int x, int y, FILE *file) {
 
 int bmp24_writePixelData(FILE *file, t_bmp24 *img) {
     int i, j;
-    // Les pixels sont stockés du bas vers le haut et en RGB
+    int rowSize = ((img->width * 3 + 3) / 4) * 4;
+    uint8_t *row = calloc(rowSize, 1); // padding à 0
+    if (!row) return 0;
+
     for (i = img->height - 1; i >= 0; i--) {
         for (j = 0; j < img->width; j++) {
-            bmp24_writePixelValue(img, j, i, file);
+            row[j*3 + 0] = img->data[i][j].blue;
+            row[j*3 + 1] = img->data[i][j].green;
+            row[j*3 + 2] = img->data[i][j].red;
         }
+        fwrite(row, 1, rowSize, file);
     }
+    free(row);
     return 1;
 }
 
@@ -183,6 +201,7 @@ t_bmp24 * bmp24_loadImage (const char * filename) {
     fclose(file);
     return image;
 }
+
 void bmp24_saveImage(t_bmp24 *img, const char *filename) {
     FILE *file = fopen(filename, "wb");
     if (!file) {
@@ -190,25 +209,56 @@ void bmp24_saveImage(t_bmp24 *img, const char *filename) {
         return;
     }
 
-    // Écrire l'en-tête et l'info header
-    file_rawWrite(0, &(img->header), sizeof(t_bmp_header), 1, file);
-    file_rawWrite(sizeof(t_bmp_header), &(img->header_info), sizeof(t_bmp_info), 1, file);
+    int rowSize = ((img->width * 3 + 3) / 4) * 4;
+    int pixelDataSize = rowSize * img->height;
 
-    // Écrire les données de pixels (en RGB, du bas vers le haut)
+    // Mettre à jour les en-têtes
+    img->header.type = BMP_TYPE;
+    img->header.size = 14 + 40 + pixelDataSize; // 14 pour header BMP, 40 pour info header
+    img->header.reserved1 = 0;
+    img->header.reserved2 = 0;
+    img->header.offset = 14 + 40;
+
+    img->header_info.size = 40;
+    img->header_info.width = img->width;
+    img->header_info.height = img->height;
+    img->header_info.planes = 1;
+    img->header_info.bits = 24;
+    img->header_info.compression = 0;
+    img->header_info.imagesize = pixelDataSize;
+    img->header_info.xresolution = 2835;
+    img->header_info.yresolution = 2835;
+    img->header_info.ncolors = 0;
+    img->header_info.importantcolors = 0;
+
+    // Écriture de l'en-tête BMP (14 octets, champ par champ pour éviter padding)
+    fwrite(&img->header.type, sizeof(uint16_t), 1, file);
+    fwrite(&img->header.size, sizeof(uint32_t), 1, file);
+    fwrite(&img->header.reserved1, sizeof(uint16_t), 1, file);
+    fwrite(&img->header.reserved2, sizeof(uint16_t), 1, file);
+    fwrite(&img->header.offset, sizeof(uint32_t), 1, file);
+
+    // Écriture de l'info header (40 octets, struct entière car pas de padding dans t_bmp_info)
+    fwrite(&img->header_info, sizeof(t_bmp_info), 1, file);
+
+    // Écriture des pixels (avec padding automatique)
+    uint8_t *row = calloc(rowSize, 1); // ligne temporaire avec padding 0
     int i, j;
     for (i = img->height - 1; i >= 0; i--) {
         for (j = 0; j < img->width; j++) {
-            uint8_t rgb[3] = {
-                img->data[i][j].red,
-                img->data[i][j].green,
-                img->data[i][j].blue
-            };
-            fwrite(rgb, 1, 3, file);
+            row[j*3 + 0] = img->data[i][j].blue;
+            row[j*3 + 1] = img->data[i][j].green;
+            row[j*3 + 2] = img->data[i][j].red;
         }
+        fwrite(row, 1, rowSize, file);
     }
+    free(row);
 
     fclose(file);
+    printf("✅ Image BMP sauvegardée dans '%s' avec succès.\n", filename);
 }
+
+
 
 void bmp24_negative (t_bmp24 * img) {
     int i, j;

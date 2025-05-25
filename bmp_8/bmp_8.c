@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include <string.h>
 
+
 t_bmp8 * bmp8_loadImage(const char * filename) {
     FILE *f = fopen(filename, "rb");
     if (f == NULL) {

@@ -14,6 +14,8 @@ typedef struct {
     unsigned int dataSize;
 }t_bmp8;
 
+
+
 // Appel des fonctions pour le fichier bmp8
 
 t_bmp8* bmp8_loadImage(const char* filename);

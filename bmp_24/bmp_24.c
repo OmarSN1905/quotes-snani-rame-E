@@ -93,14 +93,29 @@ int readPixelData(FILE *file, t_bmp24 *img) {
     }
     return 1;
 }
+void bmp24_writePixelValue(t_bmp24 *img, int x, int y, FILE *file) {
+    uint8_t rgb[3] = {
+        img->data[y][x].red,
+        img->data[y][x].green,
+        img->data[y][x].blue
+    };
+    fwrite(rgb, 1, 3, file);
+}
+void bmp24_readPixelValue(t_bmp24 *img, int x, int y, FILE *file) {
+    uint8_t rgb[3];
+    if (fread(rgb, 1, 3, file) == 3) {
+        img->data[y][x].red = rgb[0];
+        img->data[y][x].green = rgb[1];
+        img->data[y][x].blue = rgb[2];
+    }
+}
 
 int writePixelData(FILE *file, t_bmp24 *img) {
     int i, j;
-    for (i = 0; i < img->height; i++) {
+    // Les pixels sont stockés du bas vers le haut et en RGB
+    for (i = img->height - 1; i >= 0; i--) {
         for (j = 0; j < img->width; j++) {
-            if (fwrite(&img->data[i][j], sizeof(t_pixel), 1, file) != 1) {
-                return 0;
-            }
+            bmp24_writePixelValue(img, j, i, file);
         }
     }
     return 1;
@@ -168,22 +183,6 @@ t_bmp24 * bmp24_loadImage (const char * filename) {
     fclose(file);
     return image;
 }
-
-void bmp24_writePixelData(t_bmp24 *img, FILE *file) {
-    int i, j;
-    // Les pixels sont stockés du bas vers le haut et en BGR
-    for (i = img->height - 1; i >= 0; i--) {
-        for (j = 0; j < img->width; j++) {
-            uint8_t bgr[3] = {
-                img->data[i][j].blue,
-                img->data[i][j].green,
-                img->data[i][j].red
-            };
-            fwrite(bgr, 1, 3, file);
-        }
-    }
-}
-
 void bmp24_saveImage(t_bmp24 *img, const char *filename) {
     FILE *file = fopen(filename, "wb");
     if (!file) {
@@ -210,160 +209,6 @@ void bmp24_saveImage(t_bmp24 *img, const char *filename) {
 
     fclose(file);
 }
-
-
-
-
-void bmp24_negative (t_bmp24 * img) {
-    int i, j;
-    for (i = 0; i < img->height; i++) {
-        for (j = 0; j < img->width; j++) {
-            img->data[i][j].red = 255 - img->data[i][j].red;
-            img->data[i][j].green = 255 - img->data[i][j].green;
-            img->data[i][j].blue = 255 - img->data[i][j].blue;
-        }
-    }
-}
-
-void bmp24_grayscale ( t_bmp24 * img) {
-    int i, j;
-    int red = 0, green = 0, blue = 0;
-    for (i = 0; i < img->height; i++) {
-        for (j = 0; j < img->width; j++) {
-            red = img->data[i][j].red;
-            green = img->data[i][j].green;
-            blue = img->data[i][j].blue;
-
-            img->data[i][j].red = (red + green + blue ) / 3;
-            img->data[i][j].green = (red + green + blue) / 3;
-            img->data[i][j].blue = (red + green + blue) / 3;
-        }
-    }
-}
-
-void bmp24_brightness (t_bmp24 * img, int value) {
-    int i, j;
-    for (i = 0; i < img->height; i++) {
-        for (j = 0; j < img->width; j++) {
-            img->data[i][j].red = img->data[i][j].red + value;
-            if (img->data[i][j].red > 255) {
-                img->data[i][j].red = 255;
-            }
-            img->data[i][j].green = img->data[i][j].green + value;
-            if (img->data[i][j].green > 255) {
-                img->data[i][j].green = 255;
-            }
-            img->data[i][j].blue = img->data[i][j].blue + value;
-            if (img->data[i][j].blue > 255) {
-                img->data[i][j].blue = 255;
-            }
-        }
-    }
-}
-t_pixel bmp24_convolution (t_bmp24 * img, int x, int y, float ** kernel, int kernelSize) {
-    int i, j;
-    int half = kernelSize / 2;
-    float r = 0, g = 0, b = 0;
-    for (i = -half; i <= half; i++) {
-        for (j = -half; j <= half; j++) {
-            int line = x + i;
-            int col = y + j;
-            if (line >= 0 && line < img->height && col >= 0 && col < img->width) {
-                float coeff = kernel[i + half][j + half];
-                r += img->data[line][col].red * coeff;
-                g += img->data[line][col].green * coeff;
-                b += img->data[line][col].blue * coeff;
-            }
-        }
-    }
-    t_pixel result;
-
-    if (r < 0)
-        result.red = 0;
-    else if (r > 255)
-        result.red = 255;
-    else
-        result.red = r;
-
-    if (g < 0)
-        result.green = 0;
-    else if (g > 255)
-        result.green = 255;
-    else
-        result.green = g;
-
-    if (b < 0)
-        result.blue = 0;
-    else if (b > 255)
-        result.blue = 255;
-    else
-        result.blue = b;
-    return result;
-}
-
-// Fonction utilitaire pour créer un noyau de convolution
-float** create_kernel(int size) {
-    float** kernel = (float**)malloc(size * sizeof(float*));
-    int i;
-    for (i = 0; i < size; i++) {
-        kernel[i] = (float*)malloc(size * sizeof(float));
-    }
-    return kernel;
-}
-
-// Fonction utilitaire pour libérer un noyau de convolution
-void free_kernel(float** kernel, int size) {
-    int i;
-    for (i = 0; i < size; i++) {
-        free(kernel[i]);
-    }
-    free(kernel);
-}
-
-void bmp24_writePixelData(t_bmp24 *img, FILE *file) {
-    int i, j;
-    // Les pixels sont stockés du bas vers le haut et en BGR
-    for (i = img->height - 1; i >= 0; i--) {
-        for (j = 0; j < img->width; j++) {
-            uint8_t bgr[3] = {
-                img->data[i][j].blue,
-                img->data[i][j].green,
-                img->data[i][j].red
-            };
-            fwrite(bgr, 1, 3, file);
-        }
-    }
-}
-
-void bmp24_saveImage(t_bmp24 *img, const char *filename) {
-    FILE *file = fopen(filename, "wb");
-    if (!file) {
-        printf("Erreur : impossible d'ouvrir le fichier %s\n", filename);
-        return;
-    }
-
-    // Écrire l'en-tête et l'info header
-    file_rawWrite(0, &(img->header), sizeof(t_bmp_header), 1, file);
-    file_rawWrite(sizeof(t_bmp_header), &(img->header_info), sizeof(t_bmp_info), 1, file);
-
-    // Écrire les données de pixels (en RGB, du bas vers le haut)
-    int i, j;
-    for (i = img->height - 1; i >= 0; i--) {
-        for (j = 0; j < img->width; j++) {
-            uint8_t rgb[3] = {
-                img->data[i][j].red,
-                img->data[i][j].green,
-                img->data[i][j].blue
-            };
-            fwrite(rgb, 1, 3, file);
-        }
-    }
-
-    fclose(file);
-}
-
-
-
 
 void bmp24_negative (t_bmp24 * img) {
     int i, j;

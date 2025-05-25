@@ -83,8 +83,8 @@ void bmp24_gaussianBlur(t_bmp24 *img);
 void bmp24_outline(t_bmp24 *img);
 void bmp24_emboss(t_bmp24 *img);
 void bmp24_sharpen(t_bmp24 *img);
-int readPixelData(FILE *file, t_bmp24 *img);
-int writePixelData(FILE *file, t_bmp24 *img);
+int bmp24_readPixelData(FILE *file, t_bmp24 *img);
+int bmp24_writePixelData(FILE *file, t_bmp24 *img);
 
 
 #endif //FCT_H

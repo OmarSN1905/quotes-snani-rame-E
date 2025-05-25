@@ -173,7 +173,7 @@ t_bmp24 * bmp24_loadImage (const char * filename) {
     image->colorDepth = info.bits;
 
     // Lire les données des pixels
-    if (!readPixelData(file, image)) {
+    if (!bmp24_readPixelData(file, image)) {
         printf("Erreur : Impossible de lire les données des pixels\n");
         fclose(file);
         bmp24_free(image);

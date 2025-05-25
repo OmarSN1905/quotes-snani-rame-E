@@ -96,7 +96,6 @@ int readPixelData(FILE *file, t_bmp24 *img) {
 
 int writePixelData(FILE *file, t_bmp24 *img) {
     int i, j;
-    // Pas de gestion du padding, car largeur multiple de 4
     for (i = 0; i < img->height; i++) {
         for (j = 0; j < img->width; j++) {
             if (fwrite(&img->data[i][j], sizeof(t_pixel), 1, file) != 1) {

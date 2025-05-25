@@ -87,5 +87,6 @@ int bmp24_readPixelData(FILE *file, t_bmp24 *img);
 int bmp24_writePixelData(FILE *file, t_bmp24 *img);
 void free_kernel(float** kernel, int size);
 float** create_kernel(int size);
+
 #endif //FCT_H
 

@@ -82,7 +82,7 @@ void  file_rawWrite ( uint32_t position , void * buffer, uint32_t size, size_t n
     fwrite (buffer, size, n, file);
 }
 
-int readPixelData(FILE *file, t_bmp24 *img) {
+int bmp24_readPixelData(FILE *file, t_bmp24 *img) {
     int i, j;
     for (i = 0; i < img->height; i++) {
         for (j = 0; j < img->width; j++) {
@@ -110,7 +110,7 @@ void bmp24_readPixelValue(t_bmp24 *img, int x, int y, FILE *file) {
     }
 }
 
-int writePixelData(FILE *file, t_bmp24 *img) {
+int bmp24_writePixelData(FILE *file, t_bmp24 *img) {
     int i, j;
     // Les pixels sont stockés du bas vers le haut et en RGB
     for (i = img->height - 1; i >= 0; i--) {

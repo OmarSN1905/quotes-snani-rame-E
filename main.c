@@ -17,8 +17,8 @@ int main(void) {
         // Menu principal
         printf("\nVeuillez choisir une option :\n");
         printf(" 1. Ouvrir une image\n");
-        printf(" 2. Sauvegarder une image\n");
-        printf(" 3. Appliquer un filtre\n");
+        printf(" 2. Appliquer un filtre\n");
+        printf(" 3. Sauvegarder une image\n");
         printf(" 4. Afficher les informations de l'image\n");
         printf(" 5. Quitter\n");
         printf(">>> Votre choix : ");
@@ -31,40 +31,40 @@ int main(void) {
                 scanf("%255s", path);
                 if (strstr(path, "_gray.bmp")) {
                     img8 = bmp8_loadImage(path);
-                    if (img8) printf("Image 8-bits chargée avec succès !\n");
+                    if (img8) printf("Image 8-bits chargee avec succes !\n");
                 } else {
                     img24 = bmp24_loadImage(path);
-                    if (img24) printf("Image 24-bits chargée avec succès !\n");
+                    if (img24) printf("Image 24-bits chargee avec succes !\n");
                 }
                 break;
 
-            case 2:
+            case 3:
                 // Sauvegarder l'image
                 printf("Chemin de sortie : ");
                 scanf("%255s", outpath);
                 if (img8) {
                     bmp8_saveImage(outpath, img8);
-                    printf("Image 8-bits sauvegardée !\n");
+                    printf("Image 8-bits sauvegardee !\n");
                 } else if (img24) {
                     bmp24_saveImage(img24, outpath);
-                    printf("Image 24-bits sauvegardée !\n");
+                    printf("Image 24-bits sauvegardee !\n");
                 } else {
                     printf("Aucune image à sauvegarder.\n");
                 }
                 break;
 
-            case 3:
+            case 2:
                 // Appliquer un filtre
                 printf("\nAppliquer un filtre :\n");
-                printf(" 1. Négatif\n");
-                printf(" 2. Luminosité (choisir valeur)\n");
+                printf(" 1. Negatif\n");
+                printf(" 2. Luminosite (choisir valeur)\n");
                 printf(" 3. Seuil (8 bits, choisir seuil)\n");
                 printf(" 4. Box Blur\n");
                 printf(" 5. Gaussian Blur\n");
                 printf(" 6. Outline\n");
                 printf(" 7. Emboss\n");
                 printf(" 8. Sharpen\n");
-                printf(" 9. Égalisation histogramme\n");
+                printf(" 9. Egalisation histogramme\n");
                 printf("10. Retour\n");
                 printf(">>> Votre choix : ");
                 if (scanf("%d", &subchoice) != 1) break;
@@ -76,7 +76,7 @@ int main(void) {
                             break;
                         case 2: { // Luminosité
                             int val;
-                            printf("Valeur de luminosité : ");
+                            printf("Valeur de luminosite : ");
                             scanf("%d", &val);
                             bmp8_brightness(img8, val);
                         } break;
@@ -141,7 +141,7 @@ int main(void) {
                         default:
                             break;
                     }
-                    printf("Filtre appliqué sur image 8-bits.\n");
+                    printf("Filtre applique sur image 8-bits.\n");
                 } else if (img24) {
                     switch (subchoice) {
                         case 1: // Négatif
@@ -149,7 +149,7 @@ int main(void) {
                             break;
                         case 2: { // Luminosité
                             int val;
-                            printf("Valeur de luminosité : ");
+                            printf("Valeur de luminosite : ");
                             scanf("%d", &val);
                             bmp24_brightness(img24, val);
                         } break;
@@ -177,9 +177,9 @@ int main(void) {
                         default:
                             break;
                     }
-                    printf("Filtre appliqué sur image 24-bits.\n");
+                    printf("Filtre applique sur image 24-bits.\n");
                 } else {
-                    printf("Aucune image chargée.\n");
+                    printf("Aucune image chargee.\n");
                 }
                 break;
 
@@ -195,7 +195,7 @@ int main(void) {
                     printf(" Color Depth: %d bits\n", img24->colorDepth);
                     printf(" Data Size  : %d bytes\n", img24->width * img24->height * 3);
                 } else {
-                    printf("Aucune image chargée.\n");
+                    printf("Aucune image charge.\n");
                 }
                 break;
 
